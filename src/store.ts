@@ -5,11 +5,7 @@ Vue.use(Vuex);
 
 interface Person {
   name: string;
-  classes: Class[];
-}
-
-interface Class {
-  code: string;
+  classes: string[];
 }
 
 export default new Vuex.Store({
