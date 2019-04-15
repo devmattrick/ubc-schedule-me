@@ -1,18 +1,24 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div>
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            Welcome to UBC Schedule Me!
+          </h1>
+          <p class="subtitle">
+            This is a tool to help you plan your classes at UBC. Click Next to get started!
+          </p>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
 
 export default Vue.extend({
   name: 'home',
-  components: {
-    HelloWorld,
-  },
 });
 </script>
