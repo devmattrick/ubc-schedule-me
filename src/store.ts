@@ -5,7 +5,11 @@ Vue.use(Vuex);
 
 interface Person {
   name: string;
-  classes: string[];
+  firstTermClasses: string[];
+  secondTermClasses: string[];
+  electiveTermClasses: string[];
+  firstTermCount: number;
+  secondTermCount: number;
 }
 
 export default new Vuex.Store({

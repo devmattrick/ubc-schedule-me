@@ -20,12 +20,19 @@
             <div class="level-item" style="width: 100%; justify-content: flex-start;">
               <div class="columns" style="width: 100%;">
                 <div class="column is-one-third">
-                  <p class="subtitle is-6">
-                    <b>{{person.name}}</b>
-                  </p>
+                  <h2 class="is-size-4">{{person.name}}</h2>
                 </div>
                 <div class="column">
-                  <b-tag v-for="clazz in person.classes" :key="clazz">{{clazz}}</b-tag>
+                  <h3>First Term ({{person.firstTermCount}})</h3>
+                  <b-tag v-for="clazz in person.firstTermClasses" :key="clazz">{{clazz}}</b-tag>
+                </div>
+                <div class="column">
+                  <h3>Second Term ({{person.secondTermCount}})</h3>
+                  <b-tag v-for="clazz in person.secondTermClasses" :key="clazz">{{clazz}}</b-tag>
+                </div>
+                <div class="column">
+                  <h3>Electives</h3>
+                  <b-tag v-for="clazz in person.electiveClasses" :key="clazz">{{clazz}}</b-tag>
                 </div>
               </div>
             </div>
@@ -46,13 +53,80 @@
             <b-input placeholder="John Doe" v-model="name"/>
           </b-field>
 
-          <b-field label="Classes">
+          <b-field label="First Term Classes Count">
+            <b-input
+              type="number"
+              value="5"
+              v-model="firstTermCount"
+            >
+              <template slot-scope="props">
+                <span>{{props.option}}</span>
+              </template>
+
+              <template slot="empty">
+                No classes found
+              </template>
+            </b-input>
+          </b-field>
+
+          <b-field label="Required First Term Classes">
             <b-taginput
               autocomplete
               :data="filteredClasses"
               @typing="getFilteredClasses"
               placeholder="CPSC 101"
-              v-model="selectedClasses"
+              v-model="firstTermClasses"
+            >
+              <template slot-scope="props">
+                <span>{{props.option}}</span>
+              </template>
+
+              <template slot="empty">
+                No classes found
+              </template>
+            </b-taginput>
+          </b-field>
+
+          <b-field label="Second Term Classes Count">
+            <b-input
+              type="number"
+              value="5"
+              v-model="secondTermCount"
+            >
+              <template slot-scope="props">
+                <span>{{props.option}}</span>
+              </template>
+
+              <template slot="empty">
+                No classes found
+              </template>
+            </b-input>
+          </b-field>
+
+          <b-field label="Required Second Term Classes">
+            <b-taginput
+              autocomplete
+              :data="filteredClasses"
+              @typing="getFilteredClasses"
+              placeholder="CPSC 101"
+              v-model="secondTermClasses"
+            >
+              <template slot-scope="props">
+                <span>{{props.option}}</span>
+              </template>
+
+              <template slot="empty">
+                No classes found
+              </template>
+            </b-taginput>
+          </b-field>
+          <b-field label="Elective Classes">
+            <b-taginput
+              autocomplete
+              :data="filteredClasses"
+              @typing="getFilteredClasses"
+              placeholder="CPSC 101"
+              v-model="electiveClasses"
             >
               <template slot-scope="props">
                 <span>{{props.option}}</span>
@@ -102,7 +176,11 @@ export default Vue.extend({
     return {
       name: '',
       filteredClasses: classList,
-      selectedClasses: [],
+      firstTermClasses: [],
+      secondTermClasses: [],
+      electiveClasses: [],
+      firstTermCount: 5,
+      secondTermCount: 5,
     };
   },
   methods: {
@@ -118,15 +196,26 @@ export default Vue.extend({
       });
     },
     addFormSubmit() {
-      if (!this.name || this.selectedClasses.length === 0) return;
+      if (!this.name || this.firstTermClasses.length === 0 || this.secondTermClasses.length === 0) {
+        return;
+      }
 
       this.addPerson({
         name: this.name,
-        classes: this.selectedClasses.slice(),
+        firstTermClasses: this.firstTermClasses.slice(),
+        secondTermClasses: this.secondTermClasses.slice(),
+        electiveClasses: this.electiveClasses.slice(),
+        firstTermCount: this.firstTermCount,
+        secondTermCount: this.secondTermCount,
       });
 
       this.name = '';
-      this.selectedClasses = [];
+      this.firstTermClasses = [];
+      this.secondTermClasses = [];
+      this.electiveClasses = [];
+      this.firstTermCount = 5;
+      this.secondTermCount = 5;
+
     },
   },
   computed: {
