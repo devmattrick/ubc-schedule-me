@@ -48,6 +48,16 @@
 
         <h5 class="is-size-5">Add a Person</h5>
         <br>
+
+        <div v-if="error != null">
+          <b-message type="is-danger">
+            <div v-for="err in error.split('\n')" :key="err">
+              {{err}}
+              <br/>
+            </div>
+          </b-message>
+        </div>
+
         <form @submit.prevent="addFormSubmit">
           <b-field label="Name">
             <b-input placeholder="John Doe" v-model="name"/>
@@ -108,7 +118,7 @@
               autocomplete
               :data="filteredClasses"
               @typing="getFilteredClasses"
-              placeholder="CPSC 101"
+              placeholder="CPSC 210"
               v-model="secondTermClasses"
             >
               <template slot-scope="props">
@@ -125,7 +135,7 @@
               autocomplete
               :data="filteredClasses"
               @typing="getFilteredClasses"
-              placeholder="CPSC 101"
+              placeholder="ANTH 101"
               v-model="electiveClasses"
             >
               <template slot-scope="props">
@@ -160,27 +170,58 @@
 import Vue from 'vue';
 import { mapGetters, mapMutations } from 'vuex';
 
-const classes = {
-  ANTH: ['100A', '101'],
-  CPSC: ['101'],
-};
+let classes = {};
+let classList = [] as string[];
 
-const classList = Object.entries(classes).flatMap((pair) => {
-  const [key, values] = pair;
+fetch('http://localhost/courses')
+  .then((response) => response.json())
+  .then((json) => {
+    classes = json.courses;
 
-  return values.map((value) => `${key} ${value}`);
-});
+    classList = Object.entries(classes).flatMap((pair) => {
+      const [key, values] = pair;
+
+      return (values as string[]).map((value) => `${key} ${value}`);
+    });
+  });
+
+const conditionsToError = [
+  {
+    condition: (context: any) => !context.name,
+    message: 'No name entered',
+  },
+  {
+    condition: (context: any) => context.firstTermClasses.length === 0,
+    message: 'No first term classes entered',
+  },
+  {
+    condition: (context: any) => context.secondTermClasses.length === 0,
+    message: 'No second term classes entered',
+  },
+  {
+    condition: (context: any) => {
+      const classesGiven = context.firstTermClasses.length +
+                              context.secondTermClasses.length +
+                              context.electiveClasses.length;
+      const classesRequested = context.firstTermCount + context.secondTermCount;
+
+      return classesGiven < classesRequested;
+    },
+    message: 'Classes requested exceed the courses given',
+  },
+];
 
 export default Vue.extend({
   data() {
     return {
       name: '',
       filteredClasses: classList,
-      firstTermClasses: [],
-      secondTermClasses: [],
-      electiveClasses: [],
+      firstTermClasses: [] as string[],
+      secondTermClasses: [] as string[],
+      electiveClasses: [] as string[],
       firstTermCount: 5,
       secondTermCount: 5,
+      error: null as unknown,
     };
   },
   methods: {
@@ -192,11 +233,25 @@ export default Vue.extend({
       this.filteredClasses = classList.filter((clazz) => {
         return clazz
                 .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0;
-      });
+                .indexOf(input.toLowerCase()) >= 0 && !this.isIncluded(clazz);
+      }).slice(0, 10);
+    },
+    isIncluded(clazz: string): boolean {
+      return this.firstTermClasses.includes(clazz) ||
+        this.secondTermClasses.includes(clazz) ||
+        this.electiveClasses.includes(clazz);
     },
     addFormSubmit() {
-      if (!this.name || this.firstTermClasses.length === 0 || this.secondTermClasses.length === 0) {
+      const relevantConditions = conditionsToError.filter((element, _) => element.condition(this));
+
+      if (relevantConditions.length > 0) {
+        let e = 'Cannot add person due to the following errors:\n';
+
+        relevantConditions.forEach((err) => {
+          e += '- ' + err.message + '\n';
+        });
+
+        this.error = e;
         return;
       }
 
